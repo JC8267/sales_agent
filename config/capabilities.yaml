@@ -1,0 +1,34 @@
+# Deterministic access policy. Roles would come from Entra app roles / group membership.
+# The router may classify any capability, but the runtime only executes capabilities
+# granted to the caller's role, and only against stores in the caller's scope.
+
+roles:
+  store_coworker:
+    scope: home_store
+    capabilities: [LOOKUP, COMPARE, DIAGNOSE, CREATE_AUTOMATION, MANAGE_AUTOMATION, GENERAL]
+  store_manager:
+    scope: home_store
+    capabilities: [LOOKUP, COMPARE, DIAGNOSE, FORECAST, DOCUMENT_QUESTION, CREATE_AUTOMATION, MANAGE_AUTOMATION, ACTION, GENERAL]
+  market_manager:
+    scope: market
+    capabilities: [LOOKUP, COMPARE, DIAGNOSE, FORECAST, DOCUMENT_QUESTION, CREATE_AUTOMATION, MANAGE_AUTOMATION, GENERAL]
+
+capabilities:
+  LOOKUP: {enabled: true, tools: [semantic_layer]}
+  COMPARE: {enabled: true, tools: [semantic_layer]}
+  DIAGNOSE: {enabled: true, tools: [get_metric_summary, get_breakdown, get_availability]}
+  CREATE_AUTOMATION: {enabled: true, tools: [automation_store]}
+  MANAGE_AUTOMATION: {enabled: true, tools: [automation_store]}
+  GENERAL: {enabled: true, tools: []}
+  DOCUMENT_QUESTION:
+    enabled: false
+    tools: [search_documents]
+    unavailable_message: "I can't search store documents or policies yet. For now, please check the coworker portal or ask your manager."
+  FORECAST:
+    enabled: false
+    tools: [get_forecast]
+    unavailable_message: "Forecasts aren't available in this assistant yet. I can show you how recent days compared with last year."
+  ACTION:
+    enabled: false
+    tools: []
+    unavailable_message: "I can't take actions like creating tickets yet. I can only answer questions and send briefings."

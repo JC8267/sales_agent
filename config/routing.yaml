@@ -1,0 +1,35 @@
+# Router policy. Thresholds follow handoff section 9.
+confidence:
+  execute: 0.85     # >= execute: run the route
+  escalate: 0.60    # [escalate, execute): ask a stronger router; < escalate: primary model resolves intent
+
+# Default reasoning tier per capability (rules may raise DIAGNOSE to DEEP).
+capability_tiers:
+  LOOKUP: NONE
+  COMPARE: FAST
+  DIAGNOSE: STANDARD
+  DOCUMENT_QUESTION: STANDARD
+  FORECAST: STANDARD
+  CREATE_AUTOMATION: FAST
+  MANAGE_AUTOMATION: NONE
+  ACTION: STANDARD
+  GENERAL: FAST
+  DENY: NONE
+
+deep_triggers:
+  - deep dive
+  - in depth
+  - in detail
+  - root cause
+  - investigate
+  - thorough
+
+context:
+  followup_ttl_minutes: 30
+
+diagnose:
+  max_steps: 6
+  max_validation_retries: 1
+
+narration:
+  max_validation_retries: 1

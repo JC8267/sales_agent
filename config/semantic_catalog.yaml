@@ -1,0 +1,55 @@
+# Metric/dimension catalog shared by slot extraction, the semantic tool, and validation.
+# This is the single place business vocabulary lives; prompts must not redefine it.
+# If the production "semantic layer" is a BigQuery table, metric SQL definitions
+# belong next to these entries in the BigQuery adapter, not in the LLM.
+
+default_metric: sales
+data_lag_days: 1          # latest available date = store-local today - lag
+
+metrics:
+  sales:
+    label: Sales
+    unit: currency
+    synonyms: [sales, revenue, turnover]
+  transactions:
+    label: Transactions
+    unit: count
+    synonyms: [transactions, receipts, tickets, transaction count]
+  aov:
+    label: Average order value
+    unit: currency
+    synonyms: [aov, average order value, average order, avg order, basket size, average ticket, average basket]
+  units:
+    label: Units
+    unit: count
+    synonyms: [units, items sold, unit sales]
+  availability:
+    label: Availability
+    unit: percent
+    synonyms: [availability, in stock, in-stock, out of stock, stock level]
+
+comparisons:
+  last_year:
+    label: last year
+    offset_days: 364      # day-of-week aligned; confirm against the fiscal calendar
+  prior_period:
+    label: the prior period
+
+departments:
+  - {name: Living Room, aliases: [living room, living rooms, sofas]}
+  - {name: Bedroom, aliases: [bedroom, bedrooms, beds]}
+  - {name: Kitchens, aliases: [kitchen, kitchens]}
+  - {name: Storage, aliases: [storage]}
+  - {name: Textiles, aliases: [textiles, rugs]}
+  - {name: Decoration, aliases: [decoration, decor]}
+  - {name: Lighting, aliases: [lighting, lamps]}
+  - {name: Dining, aliases: [dining]}
+  - {name: Workspace, aliases: [workspace, workspaces, home office]}
+  - {name: Bathroom, aliases: [bathroom, bathrooms]}
+  - {name: Children's, aliases: [children's, childrens, children, kids]}
+  - {name: Outdoor, aliases: [outdoor]}
+
+stores:
+  "042": {name: Eastside, market_id: US-EAST, timezone: America/New_York}
+  "017": {name: Riverside, market_id: US-EAST, timezone: America/New_York}
+  "210": {name: Westfield, market_id: US-WEST, timezone: America/Los_Angeles}

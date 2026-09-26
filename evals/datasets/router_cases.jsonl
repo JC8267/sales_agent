@@ -1,0 +1,43 @@
+{"category": "lookup", "query": "How were sales yesterday?", "expected_capability": "LOOKUP", "maximum_reasoning_tier": "FAST"}
+{"category": "lookup", "query": "What were sales yesterday?", "expected_capability": "LOOKUP", "maximum_reasoning_tier": "FAST"}
+{"category": "lookup", "query": "What were our top five departments yesterday?", "expected_capability": "LOOKUP", "maximum_reasoning_tier": "FAST"}
+{"category": "lookup", "query": "transactions last 7 days", "expected_capability": "LOOKUP", "maximum_reasoning_tier": "FAST"}
+{"category": "lookup", "query": "What was our AOV yesterday?", "expected_capability": "LOOKUP", "maximum_reasoning_tier": "FAST"}
+{"category": "lookup", "query": "Show hourly sales yesterday", "expected_capability": "LOOKUP", "maximum_reasoning_tier": "FAST"}
+{"category": "lookup", "query": "Give me yesterday's performance", "expected_capability": "LOOKUP", "maximum_reasoning_tier": "FAST"}
+{"category": "lookup", "query": "How's Kitchens availability?", "expected_capability": "LOOKUP", "maximum_reasoning_tier": "FAST"}
+{"category": "compare", "query": "Compare yesterday with last year", "expected_capability": "COMPARE", "maximum_reasoning_tier": "FAST"}
+{"category": "compare", "query": "Sales vs LY for the last 7 days", "expected_capability": "COMPARE", "maximum_reasoning_tier": "FAST"}
+{"category": "compare", "query": "Show sales by department yesterday vs last year", "expected_capability": "COMPARE", "maximum_reasoning_tier": "FAST"}
+{"category": "compare", "query": "Compare sales for the last 7 days with last year", "expected_capability": "COMPARE", "maximum_reasoning_tier": "FAST"}
+{"category": "compare", "query": "How did transactions change compared to last year?", "expected_capability": "COMPARE", "maximum_reasoning_tier": "FAST"}
+{"category": "diagnose", "query": "Why were sales down yesterday?", "expected_capability": "DIAGNOSE", "minimum_reasoning_tier": "STANDARD", "maximum_reasoning_tier": "DEEP"}
+{"category": "diagnose", "query": "Why were Bedroom sales down?", "expected_capability": "DIAGNOSE", "minimum_reasoning_tier": "STANDARD", "maximum_reasoning_tier": "STANDARD"}
+{"category": "diagnose", "query": "Explain Storage decline", "expected_capability": "DIAGNOSE", "minimum_reasoning_tier": "STANDARD", "maximum_reasoning_tier": "STANDARD"}
+{"category": "diagnose", "query": "What drove the drop in transactions last week?", "expected_capability": "DIAGNOSE", "minimum_reasoning_tier": "STANDARD", "maximum_reasoning_tier": "STANDARD"}
+{"category": "diagnose", "query": "Do a deep dive on why Kitchens missed last year", "expected_capability": "DIAGNOSE", "minimum_reasoning_tier": "DEEP", "maximum_reasoning_tier": "DEEP"}
+{"category": "forecast", "query": "Forecast sales through Sunday", "expected_capability": "FORECAST", "maximum_reasoning_tier": "STANDARD"}
+{"category": "forecast", "query": "Are we on track to beat last week?", "expected_capability": "FORECAST", "maximum_reasoning_tier": "STANDARD"}
+{"category": "document", "query": "What is the return policy for opened mattresses?", "expected_capability": "DOCUMENT_QUESTION", "maximum_reasoning_tier": "STANDARD"}
+{"category": "document", "query": "How do I process a price adjustment?", "expected_capability": "DOCUMENT_QUESTION", "maximum_reasoning_tier": "STANDARD"}
+{"category": "automation_create", "query": "Send me this briefing every weekday at 8 AM.", "expected_capability": "CREATE_AUTOMATION", "maximum_reasoning_tier": "FAST"}
+{"category": "automation_create", "query": "Give me yesterday's performance every morning at 8.", "expected_capability": "CREATE_AUTOMATION", "maximum_reasoning_tier": "FAST"}
+{"category": "automation_create", "query": "Every morning at 8 give me a summary of yesterday's sales", "expected_capability": "CREATE_AUTOMATION", "maximum_reasoning_tier": "FAST"}
+{"category": "automation_create", "query": "Alert me when sales are more than 10% below last year.", "expected_capability": "CREATE_AUTOMATION", "maximum_reasoning_tier": "FAST"}
+{"category": "automation_create", "query": "Let me know if Kitchen availability falls below 90%", "expected_capability": "CREATE_AUTOMATION", "maximum_reasoning_tier": "FAST"}
+{"category": "automation_manage", "query": "What briefings do I have?", "expected_capability": "MANAGE_AUTOMATION", "maximum_reasoning_tier": "FAST"}
+{"category": "automation_manage", "query": "Stop my morning report.", "expected_capability": "MANAGE_AUTOMATION", "maximum_reasoning_tier": "FAST"}
+{"category": "automation_manage", "query": "Move my report to 7:30.", "expected_capability": "MANAGE_AUTOMATION", "maximum_reasoning_tier": "FAST"}
+{"category": "automation_manage", "query": "Only send it Monday through Friday.", "expected_capability": "MANAGE_AUTOMATION", "maximum_reasoning_tier": "FAST"}
+{"category": "action", "query": "Create a ticket for the broken register", "expected_capability": "ACTION", "maximum_reasoning_tier": "STANDARD"}
+{"category": "unauthorized", "query": "What were sales at store 017 yesterday?", "expected_capability": "DENY", "maximum_reasoning_tier": "NONE"}
+{"category": "unauthorized", "query": "Compare store #210 with last year", "expected_capability": "DENY", "maximum_reasoning_tier": "NONE"}
+{"category": "ambiguous", "query": "Bedroom?", "expected_capability": "LOOKUP", "maximum_reasoning_tier": "FAST"}
+{"category": "ambiguous", "query": "hello", "expected_capability": "GENERAL", "maximum_reasoning_tier": "STANDARD"}
+{"category": "ambiguous", "query": "What's the weather like?", "expected_capability": "GENERAL", "maximum_reasoning_tier": "STANDARD"}
+{"category": "followup", "history": ["What were sales yesterday?"], "query": "Compare that with last year.", "expected_capability": "COMPARE", "maximum_reasoning_tier": "FAST"}
+{"category": "followup", "history": ["What were sales yesterday?", "Compare that with last year."], "query": "Which departments drove the difference?", "expected_capability": "COMPARE", "maximum_reasoning_tier": "FAST"}
+{"category": "followup", "history": ["Compare sales yesterday with last year"], "query": "Why?", "expected_capability": "DIAGNOSE", "minimum_reasoning_tier": "STANDARD", "maximum_reasoning_tier": "STANDARD"}
+{"category": "followup", "history": ["Why was Bedroom down yesterday?"], "query": "What about Kitchens?", "expected_capability": "DIAGNOSE", "minimum_reasoning_tier": "STANDARD", "maximum_reasoning_tier": "STANDARD"}
+{"category": "followup", "history": ["Compare sales yesterday with last year"], "query": "And transactions?", "expected_capability": "COMPARE", "maximum_reasoning_tier": "FAST"}
+{"category": "automation_create", "query": "Schedule a sales briefing for me", "expected_capability": "CREATE_AUTOMATION", "maximum_reasoning_tier": "FAST"}

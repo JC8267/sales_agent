@@ -1,0 +1,21 @@
+# Local stand-in for Entra identity + HR attributes. In production the user id is the
+# Entra object id from the validated Teams activity, and these fields come from the
+# directory, never from conversation text.
+users:
+  u-anna:
+    display_name: Anna
+    role: store_coworker
+    store_id: "042"
+  u-marco:
+    display_name: Marco
+    role: store_manager
+    store_id: "042"
+  u-rita:
+    display_name: Rita
+    role: market_manager
+    store_id: "042"
+    market_id: US-EAST
+  u-wes:
+    display_name: Wes
+    role: store_coworker
+    store_id: "210"

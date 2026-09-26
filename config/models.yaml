@@ -1,0 +1,31 @@
+# Model gateway configuration. Orchestration code asks for a tier, never a model.
+# Model ids are "<provider>/<model>". Only the offline `fake` provider exists today;
+# add a provider adapter in store_agent/models/ and point a tier at it to go live.
+
+tiers:
+  FAST:
+    primary: fake/fast-a
+    fallback: fake/fast-b
+    timeout_s: 10
+  STANDARD:
+    primary: fake/standard-a
+    fallback: fake/standard-b
+    timeout_s: 30
+  DEEP:
+    primary: fake/deep-a
+    fallback: fake/deep-b
+    degrade_to: STANDARD   # deep unavailable -> fallback deep -> standard chain
+    timeout_s: 60
+
+# USD per million tokens, used for per-request cost estimates in traces.
+pricing:
+  fake/fast-a: {input_per_mtok: 0.0, output_per_mtok: 0.0}
+  fake/fast-b: {input_per_mtok: 0.0, output_per_mtok: 0.0}
+  fake/standard-a: {input_per_mtok: 0.0, output_per_mtok: 0.0}
+  fake/standard-b: {input_per_mtok: 0.0, output_per_mtok: 0.0}
+  fake/deep-a: {input_per_mtok: 0.0, output_per_mtok: 0.0}
+  fake/deep-b: {input_per_mtok: 0.0, output_per_mtok: 0.0}
+
+circuit_breaker:
+  failure_threshold: 3
+  cooldown_s: 60
