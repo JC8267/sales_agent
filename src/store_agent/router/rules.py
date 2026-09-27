@@ -3,7 +3,7 @@
 import re
 
 from store_agent.config import RoutingConfig
-from store_agent.context.conversation import Frame
+from store_agent.context.conversation import Frame, is_followup
 from store_agent.contracts import Capability, RouteDecision, Slots, Tier
 
 C = Capability
@@ -27,7 +27,6 @@ DIAGNOSE_RE = re.compile(
 MOVE_RE = re.compile(r"\b(down|up|drop|dropped|decline|declined|fell|low|lower|high|higher|increase|decrease|miss|missed|weak|strong)\b")
 COMPARE_RE = re.compile(r"\b(compare|compared|comparison|vs\.?|versus|difference|drove|driving|contribut\w*|changed?|against)\b")
 LOOKUP_RE = re.compile(r"\b(how (were|was|are|is|did)|what (were|was|are|is)|show|give me|tell me|numbers)\b")
-CONTINUE_RE = re.compile(r"^(and|what about|how about|same for|now|also)\b")
 
 
 class RuleRouter:
@@ -71,7 +70,7 @@ class RuleRouter:
             confidence = 0.9 if (slots.metrics or slots.comparison or prior) else 0.72
             return decide(C.COMPARE, confidence, "comparison phrase")
 
-        if prior and prior.capability in (C.LOOKUP, C.COMPARE, C.DIAGNOSE) and (CONTINUE_RE.search(t) or len(t.split()) <= 3):
+        if prior and prior.capability in (C.LOOKUP, C.COMPARE, C.DIAGNOSE) and is_followup(slots, prior):
             if slots.metrics or slots.departments or slots.time_range:
                 return decide(prior.capability, 0.86, "short follow-up inherits previous capability", prior_tier(self.routing, prior))
         if slots.briefing and not slots.metrics:

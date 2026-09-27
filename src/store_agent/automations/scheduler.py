@@ -5,6 +5,7 @@ tick() instead of run_forever()."""
 import logging
 import time
 from datetime import timedelta
+from threading import Lock
 from typing import Protocol
 
 from store_agent.automations.models import Automation
@@ -51,15 +52,25 @@ class AutomationExecutor:
 
 
 class PollingScheduler:
+    # ponytail: serialize local SQLite ticks; use a durable outbox before external delivery.
+    _tick_lock = Lock()
+
     def __init__(self, repo: AutomationRepository, executor: AutomationExecutor, clock: Clock, max_lateness: timedelta = timedelta(hours=2)):
         self.repo, self.executor, self.clock, self.max_lateness = repo, executor, clock, max_lateness
 
     def tick(self) -> list[tuple[str, str]]:
+        # The local outbox, run record, and schedule commit together. An interrupted
+        # transaction rolls back, leaving the occurrence due for the next process.
+        with self._tick_lock, self.repo.conn:
+            self.repo.conn.execute("BEGIN IMMEDIATE")
+            return self._tick()
+
+    def _tick(self) -> list[tuple[str, str]]:
         now = self.clock.now()
         results = []
         for a in self.repo.due(now):
             scheduled_for = a.next_run_at
-            # Advance first so a crash mid-run can't cause a tight retry loop; claim_run dedupes.
+            # This advance is committed only with the run and local delivery.
             a.next_run_at = a.schedule.next_run(now, a.timezone)
             a.updated_at = now
             self.repo.save(a)

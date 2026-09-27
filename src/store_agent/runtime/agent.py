@@ -21,7 +21,7 @@ from store_agent.models.types import AllModelsUnavailable, Message, ModelTask
 from store_agent.observability.tracing import Trace, TraceStore
 from store_agent.prompts import load_prompt
 from store_agent.router.router import HybridRouter
-from store_agent.router.slots import extract_slots
+from store_agent.router.slots import DateClarification, extract_slots
 from store_agent.runtime import automation_intents, compose
 from store_agent.runtime.briefing import briefing
 from store_agent.runtime.compose import Draft
@@ -30,7 +30,7 @@ from store_agent.runtime.evidence import EvidenceLedger
 from store_agent.security.authorization import AuthorizationError, AuthorizedScope, resolve_scope
 from store_agent.security.identity import IdentityProvider
 from store_agent.tools.analysis import AnalysisTools
-from store_agent.tools.semantic.contract import SemanticLayer, SemanticLayerError, SemanticQuery
+from store_agent.tools.semantic.contract import SemanticLayer, SemanticLayerError, SemanticQuery, TimeRange
 from store_agent.tools.semantic.scoped import SemanticTool
 from store_agent.validation.numeric import ValidationResult, validate_text
 
@@ -76,6 +76,8 @@ class AgentRuntime:
         )
         try:
             response = self._handle(request, trace)
+        except DateClarification as e:
+            response = AgentResponse(request_id=request.request_id, text=str(e), status="clarify")
         except SemanticLayerError as e:
             trace.notes.append(f"semantic layer: {e}")
             response = AgentResponse(request_id=request.request_id, text=str(e) or "I couldn't get the data right now.", status="error")
@@ -166,8 +168,13 @@ class AgentRuntime:
     def _lookup(self, turn: Turn) -> AgentResponse:
         slots = turn.route.slots
         if slots.briefing and not slots.metrics and not slots.dimensions:
-            draft = briefing(turn.semantic, self.settings.catalog, turn.scope.home_store, greeting=False)
-            return self._respond(turn, draft, Tier.NONE, frame=None)
+            if slots.time_range and slots.time_range.type != "yesterday":
+                return AgentResponse(request_id=turn.request.request_id, text="Daily briefings cover yesterday. For another date, ask for sales on YYYY-MM-DD.", status="clarify")
+            frame = self._frame(turn)
+            frame.time_range, frame.comparison = TimeRange(type="yesterday"), "last_year"
+            frame.metrics, frame.departments = ["sales", "transactions", "aov"], []
+            draft = briefing(turn.semantic, self.settings.catalog, frame.store_id, greeting=False)
+            return self._respond(turn, draft, Tier.NONE, frame=frame)
         frame = self._frame(turn)
         _, result = turn.semantic.query(self._query(frame, slots), "lookup")
         return self._respond(turn, compose.lookup(result, self.settings.catalog), turn.route.reasoning_tier, frame)
@@ -218,7 +225,7 @@ class AgentRuntime:
         return draft.to_response(turn.request.request_id, text=prefix + draft.text, status="degraded")
 
     def _create_automation(self, turn: Turn) -> AgentResponse:
-        store = turn.prior.store_id if turn.prior else turn.scope.home_store
+        store = self._frame(turn).store_id
         return automation_intents.create(
             turn.request.request_id, turn.user.user_id, store, turn.user.timezone, turn.route.slots, self.automations, self.clock.now()
         )
@@ -279,6 +286,7 @@ class AgentRuntime:
         base = validate_text(draft_text, turn.ledger, turn.scope.stores)
         if not base.passed:
             turn.trace.notes.append(f"deterministic draft failed validation: {base.violations}")
+            return draft_text, base
         if tier == Tier.NONE:
             return draft_text, base
         violations = None
@@ -311,6 +319,8 @@ class AgentRuntime:
         trace.reasoning_tier, trace.route_reason = route.reasoning_tier, route.reason
 
     def _finish(self, trace: Trace, response: AgentResponse, t0: float) -> AgentResponse:
+        if trace.validation and not trace.validation["passed"]:
+            response = AgentResponse(request_id=response.request_id, text="I couldn't verify the answer against the data. Please try again.", status="error")
         trace.status, trace.response_source = response.status, response.source
         trace.total_latency_ms = round((time.perf_counter() - t0) * 1000, 2)
         self.traces.save(trace)

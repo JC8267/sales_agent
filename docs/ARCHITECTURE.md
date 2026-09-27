@@ -248,7 +248,12 @@ class SemanticLayer:   query(q) -> SemanticResult   # raises DataNotAvailable / 
 - Runs: `automation_runs` PK `(automation_id, scheduled_for)` makes execution idempotent
   across restarts and multiple workers. Run statuses: `delivered`, `delivery_failed`,
   `denied`, `error`, `missed`.
-- Policy: the tick advances `next_run_at` before executing. Runs later than 2 h are
+- Local recovery: each SQLite tick commits the schedule advance, run record, and local
+  outbox writes in one transaction. An interruption rolls them back, leaving the run due
+  for retry. Ticks are serialized; slow queries hold the SQLite write lock. Before adding
+  an external Teams sender, use a durable delivery outbox: remote sends cannot roll back
+  with SQLite, so this transaction alone cannot guarantee exactly-once remote delivery.
+- Policy: the tick advances `next_run_at` within that transaction. Runs later than 2 h are
   recorded as `missed`, not sent. Owner identity and scope are re-resolved at run time.
   Denied or failed runs never deliver.
 - Production scheduler: Cloud Scheduler (or an Azure Functions timer) calls a `tick`
