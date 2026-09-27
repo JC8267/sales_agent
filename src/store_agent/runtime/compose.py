@@ -118,6 +118,8 @@ def _change_sentence(m: str, row: dict[str, Any], period_label: str, vs: str, ca
         return f"{label} {period_label} {verb} {_fmt(m, value, catalog)}; there is no comparison data."
     if catalog.metrics[m].unit == "percent":
         change = f"{direction(diff)} {abs(diff):.1f} percentage points" if diff else "unchanged"
+    elif pc is None:
+        change = f"{direction(diff)} {_fmt(m, abs(diff), catalog)}" if diff else "flat"
     else:
         change = f"{direction(pc)} {pct(pc)}" if pc else "flat"
     return f"{label} {period_label} {verb} {_fmt(m, value, catalog)}, {change} vs {_fmt(m, cmp_value, catalog)} on {vs}."
@@ -137,7 +139,7 @@ def _kpi(m: str, row: dict[str, Any], vs_short: str, catalog: SemanticCatalog) -
     moved = pc if pc is not None else diff
     change = None
     if moved is not None:
-        change = f"{arrow(moved)} {pct(pc)} {vs_short}" if pc is not None else f"{arrow(moved)} {abs(diff):.1f} percentage points"
+        change = f"{arrow(moved)} {pct(pc)} {vs_short}" if pc is not None else f"{arrow(moved)} {_change_text(m, row, catalog)} {vs_short}"
     return Kpi(label=_label(m, catalog), value=_fmt(m, row[m], catalog), change=change, direction=direction(moved or 0) if moved is not None else None)
 
 

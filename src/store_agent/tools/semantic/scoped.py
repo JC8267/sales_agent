@@ -4,7 +4,7 @@ from store_agent.config import SemanticCatalog
 from store_agent.observability.tracing import ToolCallRecord, Trace
 from store_agent.runtime.evidence import EvidenceLedger
 from store_agent.security.authorization import AuthorizedScope, require_store
-from store_agent.tools.semantic.contract import SemanticLayer, SemanticLayerError, SemanticQuery, SemanticResult, UnsupportedQuery
+from store_agent.tools.semantic.contract import DataNotAvailable, SemanticLayer, SemanticLayerError, SemanticQuery, SemanticResult, UnsupportedQuery
 
 
 class SemanticTool:
@@ -25,6 +25,8 @@ class SemanticTool:
         t0 = time.perf_counter()
         try:
             result = self.layer.query(q)
+            if not result.rows or any(row.get(m) is None for row in result.rows for m in q.metrics):
+                raise DataNotAvailable("Requested data is unavailable for this store and period.")
         except SemanticLayerError as e:
             self.trace.tool_calls.append(ToolCallRecord(name=purpose, args=args, latency_ms=_ms(t0), status="error", error=str(e)))
             raise

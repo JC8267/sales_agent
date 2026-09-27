@@ -58,6 +58,8 @@ class FakeProvider:
         frame = task.context["frame"]
         dept = (frame.get("departments") or [None])[0]
         results = [json.loads(m.content) for m in task.messages if m.role == "tool"]
+        if any("error" in r for r in results):
+            raise ModelUnavailable("Tool data is unavailable for the scripted diagnosis")
 
         if dept:
             plan = [
@@ -82,6 +84,8 @@ class FakeProvider:
 def _explain(frame: dict[str, Any], dept: str | None, results: list[dict[str, Any]]) -> list[dict[str, Any]]:
     summary = results[0]
     v, eid = summary["values"], summary["evidence_id"]
+    if any(v.get(f"{m}_pct") is None for m in ("sales", "transactions", "aov")):
+        raise ModelUnavailable("Comparison percentages are unavailable for the scripted diagnosis")
     vs = "vs last year" if frame.get("comparison") == "last_year" else f"vs {summary['comparison']}"
     subject = f"{dept} sales" if dept else "Sales"
     claims = [

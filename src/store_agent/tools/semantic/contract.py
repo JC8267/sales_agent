@@ -5,9 +5,10 @@ runtime from the caller's authorized scope; model-produced arguments never carry
 """
 
 from datetime import date
+from decimal import Decimal
 from typing import Any, Literal, Protocol
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 Dimension = Literal["department", "hour", "date"]
 ComparisonKind = Literal["last_year", "prior_period"]
@@ -15,21 +16,32 @@ ComparisonKind = Literal["last_year", "prior_period"]
 
 class TimeRange(BaseModel):
     type: Literal["yesterday", "today", "last_n_days", "date_range"]
-    n: int | None = None
+    n: int | None = Field(default=None, gt=0)
     start: date | None = None
     end: date | None = None
+
+    @model_validator(mode="after")
+    def valid_range(self):
+        if self.type == "last_n_days" and self.n is None:
+            raise ValueError("last_n_days requires a positive day count")
+        if self.type == "date_range":
+            if self.start is None or self.end is None:
+                raise ValueError("date_range requires start and end dates")
+            if self.start > self.end:
+                raise ValueError("start must be on or before end")
+        return self
 
 
 class SemanticQuery(BaseModel):
     store_id: str
-    metrics: list[str]
+    metrics: list[str] = Field(min_length=1)
     dimensions: list[Dimension] = Field(default_factory=list)
     time_range: TimeRange
     comparison: ComparisonKind | None = None
     filters: dict[str, list[str]] = Field(default_factory=dict)
     order_by: str | None = None
     descending: bool = True
-    limit: int | None = None
+    limit: int | None = Field(default=None, gt=0)
 
 
 class Period(BaseModel):
@@ -51,6 +63,13 @@ class SemanticResult(BaseModel):
     period: Period
     rows: list[dict[str, Any]]
     source: str
+
+    @field_validator("rows", mode="before")
+    @classmethod
+    def normalize_decimals(cls, rows):
+        # Warehouse calculations retain Decimal precision; response values use floats
+        # without intermediate rounding. Formatting rounds only for display.
+        return [{k: float(v) if isinstance(v, Decimal) else v for k, v in row.items()} for row in rows]
 
 
 class SemanticLayerError(Exception):

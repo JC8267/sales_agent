@@ -1,6 +1,7 @@
 """Evidence ledger: every number a response may state, keyed back to the tool call that
 produced it. Validation checks generated text against this ledger."""
 
+from decimal import Decimal
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -44,7 +45,7 @@ class EvidenceLedger:
         for row in rows:
             label = ",".join(f"{k}={row[k]}" for k in row if k in DIMENSION_KEYS) or "total"
             for k, v in row.items():
-                if k in DIMENSION_KEYS or isinstance(v, bool) or not isinstance(v, (int, float)):
+                if k in DIMENSION_KEYS or isinstance(v, bool) or not isinstance(v, (int, float, Decimal)):
                     continue
                 values.append(EvidenceValue(key=f"{eid}:{label}.{k}", value=float(v), unit=self.unit_of(k)))
         self.items.append(EvidenceItem(id=eid, tool=tool, args=args, rows=rows, values=values, period=period))

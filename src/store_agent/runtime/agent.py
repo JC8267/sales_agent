@@ -9,6 +9,8 @@ import logging
 import time
 from dataclasses import dataclass
 
+from pydantic import ValidationError
+
 from store_agent.automations.repository import AutomationRepository
 from store_agent.clock import Clock
 from store_agent.config import Settings
@@ -80,6 +82,9 @@ class AgentRuntime:
         except AuthorizationError as e:
             trace.notes.append(f"authorization: {e}")
             response = AgentResponse(request_id=request.request_id, text="You don't have access to that data.", status="denied")
+        except ValidationError as e:
+            trace.notes.append(f"invalid request: {e}")
+            response = AgentResponse(request_id=request.request_id, text="Please use positive day counts and limits, and provide a date range with the start on or before the end.", status="error")
         except Exception as e:
             log.exception("request %s failed", request.request_id)
             trace.notes.append(f"unhandled: {type(e).__name__}: {e}")
