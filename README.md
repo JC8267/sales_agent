@@ -11,6 +11,10 @@ interface, so real implementations replace fakes without touching orchestration 
 
 ## Run it
 
+GitHub Actions runs the tests and router evaluation on every push and pull request.
+The router regression test requires all labeled cases to pass capability and tier checks,
+with no unnecessary DEEP routing. CI installs dependencies from `uv.lock` on Python 3.12.
+
 ```powershell
 uv sync
 uv run pytest
