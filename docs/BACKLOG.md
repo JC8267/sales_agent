@@ -24,7 +24,7 @@ Blocking questions refer to `ARCHITECTURE.md` §0 (A1–A7).
 | B-09 | Real utterance collection | 200+ pilot-store questions captured (hashed users); rules/slots extended | Pilot access |
 | B-10 | Router eval as CI gate | ≥200 labeled cases incl. multi-turn and unauthorized; CI fails below agreed capability/tier accuracy; tracks unnecessary-deep rate | Spike: 43 cases, runner done |
 | B-11 | First real model provider | `ModelProvider` adapter; tiers mapped in `models.yaml`; pricing, timeouts; fallback verified | A4 |
-| B-12 | Stage-2 router bake-off | Jev vs small LLM classifier vs rules-only on B-10 set: accuracy, latency, cost | B-10, B-11, A7 |
+| B-12 | Stage-2 router bake-off | Evaluate a subset of the [System One candidates](ARCHITECTURE.md#stage-2-system-one-model-candidates) vs small LLM classifier and rules-only on B-10 set: accuracy, calibration, fallback rate, latency, cost | B-10, B-11, A7 |
 
 ## Phase 3: Analytics agent
 

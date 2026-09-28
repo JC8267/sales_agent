@@ -175,6 +175,48 @@ categories, including multi-turn) and `evals/run_router_eval.py`. The runner rep
 capability accuracy, tier accuracy, unnecessary-deep rate, incorrect-fast rate, stage-2
 rate, router latency, and cost per request.
 
+### Stage-2 System One model candidates
+
+Research snapshot: **2026-09-28**, for B-12. These are possibilities for evaluation,
+not selected providers or implemented integrations. "System One" here includes typed
+decision models and small classifiers. Choice selects a category, Score evaluates ordered
+options, and Noul answers a Boolean question; names and response formats vary by project.
+Published latency and benchmark results are author-reported, not measurements on our workload.
+
+**Commercial / hosted**
+
+| Candidate | Potential fit | Status and integration notes |
+|---|---|---|
+| **1. Jev 1.13 — TypeSafe AI** | Reference candidate for Choice / Score / Noul, with RLCD-trained probabilities. | Launch announcement describes early access; confirm current availability and service terms rather than assume GA. Published pricing: $0.042 per million input tokens, output free; reported latency: 70–500 ms. OpenRouter lists `typesafe/jev-1.13` through its Decisions API. Sources: [TypeSafe launch](https://typesafe.ai/blog/introducing-system-one-models-and-jev), [hosted model](https://openrouter.ai/typesafe/jev-1.13). |
+| **2. Tev1 — Together AI** | Experimental Qwen3.5-4B classifier; Choice with 2–24 options. Public training recipe offers a reproducible baseline. | Hosted ID: `together/Tev1-4B-experimental`. Uses a standard next-token head and chat completions returning an option letter; requires parsing and mapping. Log probabilities are not calibrated confidence. Confirm current endpoint pricing and availability; released weight terms are separate from MIT repository code. Sources: [Together recipe](https://www.together.ai/blog/how-to-train-your-own-jev), [model card](https://huggingface.co/togethercomputer/Tev1-4B-experimental), [repository](https://github.com/togethercomputer/tev1). |
+
+**Open-weight / self-hosted candidates**
+
+| Candidate | Potential fit | Status and integration notes |
+|---|---|---|
+| **3. Kev family — Jared Palmer** | 0.8B / 4B / 9B variants among a growing family; Choice / Score / Noul. Practical candidate for comparing local and hosted decisions. | Repository provides a TypeSafe-compatible `/v1/systemone` server and Apache 2.0 code. Pin the exact checkpoint and base-model terms. OpenRouter's Kev-4B listing reports $0.042 per million input tokens and free output through its Decisions API. Sources: [repository](https://github.com/jaredpalmer/kev), [hosted Kev-4B](https://openrouter.ai/jaredpalmer/kev-4b). |
+| **4. Laya — Convai Innovations** | Approximately 322–421M encoder variants using ModernBERT / mmBERT and decision heads; Choice / Score / Noul. Candidate for lightweight local inference and multilingual routing. | Apache 2.0 stated by the project. Context limits differ by checkpoint: the English model card lists 512 tokens per question. Multilingual coverage and roughly 33–38 ms GPU latency are project claims to evaluate locally. Verify serving format rather than assume a base-URL-only swap. Sources: [model card](https://huggingface.co/convaiinnovations/laya), [project site](https://laya.convaiinnovations.com/). |
+| **5. Decider series — Mapika** | Qwen3.5-based 2B / 4B candidates with all three primitives and a TypeSafe-compatible server. | Apache 2.0 repository. Pin a release: current release notes disclose that 4B v2.1 and 2B v11 did not pass the project's pre-registered release rules. Earlier benchmark wins do not establish consistent superiority over Jev. Source: [repository and release notes](https://github.com/Mapika/decider). |
+| **6. CLM — Contrastive-LM / Jacky Kwok team** | CLM-8B scores state against candidate actions using contrastive embeddings; reusable action embeddings may help repeated routing schemas. | Apache 2.0 repository with training recipe and a TypeSafe-compatible serving layer. Reference setup uses Qwen3-8B plus a decision head. Default serving context is 2,048 tokens and can truncate inputs; verify both encoder and server limits. Source: [repository](https://github.com/Contrastive-LM/CLM). |
+| **7. GLiNER2.5-Decide — Fastino Labs** | 340M DeBERTa-based encoder with typed classification, span/relation extraction, and cross-decision constraints. Candidate for CPU or small-GPU routing. | Apache 2.0 model card. Uses the GLiNER2 SDK; TypeSafe wire compatibility is not established. Published latency depends on hardware and short inputs. Evaluate classification alone before considering its additional extraction features. Sources: [model card](https://huggingface.co/fastino/GLiNER2.5-Decide), [release article](https://fastino.ai/blog/gliner-2-5-decide-open-weight-decision-model). |
+| **8. Bespoke-Nimble — Bespoke Labs** | Qwen3.5-9B adapter with candidate scoring over enum / Boolean schemas; ordered enums can support application-computed scores. Public training recipe. | Native schema and serving format need an adapter; do not assume TypeSafe compatibility. Confirm code, adapter, and base-weight licenses individually. Calibration changes between checkpoints, so pin and evaluate the release. Sources: [repository](https://github.com/bespokelabsai/nimble), [model card](https://huggingface.co/bespokelabs/Bespoke-Nimble-9B). |
+| **9. NanoJev — TianyuCodings; similar small experiments** | Qwen3-0.6B with decision heads for Choice / Boolean / Score. Useful research or resource-constrained baseline. | NanoJev's published checkpoint is trained on game tasks; retail intent transfer is unproven. Native endpoint is `/api/evaluate`, not `/v1/systemone`. MIT repository code does not settle base-model, weight, or dataset terms. Assess other small experiments individually. Sources: [repository](https://github.com/TianyuCodings/NanoJev), [checkpoint](https://huggingface.co/C-Tianyu/NanoJev). |
+
+**Fit to this router.** An evaluated candidate needs an `IntelligentRouter` adapter returning
+capability, reasoning tier, and confidence. Restrict capability choices to the supplied allowed
+list; classify tier separately if needed. Keep authorization and slot extraction deterministic.
+Typed outputs do not guarantee correct intent, and provider confidence fields are not necessarily
+interchangeable. Validate and calibrate them before applying our 0.60 / 0.85 thresholds.
+
+**B-12 comparison.** Start with the rules-only and existing `ModelRouter` baselines, then pilot
+a small subset of this list on B-10's expanded dataset with held-out cases. Report capability
+and tier accuracy, confidence calibration, fallback rate, p50/p95 latency, and cost, both on
+stage-2 cases and across the complete hybrid router. Include ambiguous requests, follow-ups,
+and context-limit cases. Record checkpoint, API version, hardware, concurrency, and warm/cold
+conditions. Confirm licenses, data handling, and access before a pilot; self-hosted compute
+has a cost even when weights are free. No candidate is a production choice until it passes
+our own evaluation.
+
 ## 6. Model gateway interface
 
 ```python
