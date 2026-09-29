@@ -107,6 +107,17 @@ class DevUser(BaseModel):
     timezone: str | None = None
 
 
+class CubeConfig(BaseModel):
+    enabled: bool = False
+    api_url: str = ""
+    token_env: str = "STORE_AGENT_CUBE_TOKEN"
+    store_member: str = ""
+    time_member: str = ""
+    measures: dict[str, str] = Field(default_factory=dict)
+    dimensions: dict[str, str] = Field(default_factory=dict)
+    timeout_s: float = Field(default=10, gt=0, allow_inf_nan=False)
+
+
 class Settings(BaseModel):
     models: ModelsConfig
     routing: RoutingConfig
@@ -114,6 +125,7 @@ class Settings(BaseModel):
     catalog: SemanticCatalog
     dev_users: dict[str, DevUser]
     log_message_text: bool = False
+    cube: CubeConfig = Field(default_factory=CubeConfig)
 
 
 def _load(path: Path) -> dict:
@@ -138,4 +150,5 @@ def load_settings(config_dir: Path | None = None) -> Settings:
         capabilities=CapabilitiesConfig(**_load(d / "capabilities.yaml")),
         catalog=SemanticCatalog(**_load(d / "semantic_catalog.yaml")),
         dev_users={k: DevUser(**v) for k, v in _load(d / "dev_users.yaml").get("users", {}).items()},
+        cube=CubeConfig(**_load(d / "cube.yaml")) if (d / "cube.yaml").exists() else CubeConfig(),
     )

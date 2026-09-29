@@ -22,6 +22,7 @@ from store_agent.runtime.agent import AgentRuntime
 from store_agent.security.identity import DevIdentityProvider
 from store_agent.storage import connect
 from store_agent.tools.semantic.contract import SemanticLayer
+from store_agent.tools.semantic.cube import CubeSemanticLayer
 from store_agent.tools.semantic.mock import MockSemanticLayer
 
 
@@ -50,6 +51,8 @@ def build_app(
 ) -> App:
     settings = settings or load_settings()
     clock = clock or AdjustableClock()
+    if semantic_layer is None:
+        semantic_layer = CubeSemanticLayer(settings.cube, settings.catalog, clock) if settings.cube.enabled else MockSemanticLayer(settings.catalog, clock)
     conn = connect(db_path)
     gateway = ModelGateway(settings.models, providers or {"fake": FakeProvider()})
     router = HybridRouter(RuleRouter(settings.routing), ModelRouter(gateway), settings.routing)
@@ -60,7 +63,7 @@ def build_app(
         settings=settings,
         clock=clock,
         identity=DevIdentityProvider(settings),
-        semantic_layer=semantic_layer or MockSemanticLayer(settings.catalog, clock),
+        semantic_layer=semantic_layer,
         gateway=gateway,
         router=router,
         conversations=conversations,

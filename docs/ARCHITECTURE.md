@@ -7,7 +7,7 @@ point at the runnable slice in `src/store_agent/`.
 
 | # | Assumption used in this design | Owner / how to close |
 |---|---|---|
-| A1 | The "semantic layer" is likely a curated **BigQuery table** rather than a headless BI service. We therefore own a thin metric catalog (`config/semantic_catalog.yaml`) and a BigQuery adapter that compiles `SemanticQuery` to parameterized SQL. If Looker/dbt SL turns out to exist, only the adapter changes. | Confirm table(s), grain, freshness, and who owns metric definitions. |
+| A1 | The production semantic layer is **Cube** (confirmed 2026-09-29). Our catalog owns employee vocabulary; Cube owns metric formulas. An opt-in REST adapter maps `SemanticQuery` to configured Cube members. | Confirm endpoint, authentication/access policies, member names, units, grain, freshness, and fiscal-calendar definitions. |
 | A2 | LY comparison = same weekday 364 days back. | Confirm against the fiscal calendar; replace `tools/semantic/calendar.py` with the calendar table. |
 | A3 | Data lands daily; the latest complete day is "yesterday" in store-local time. "Today" questions are declined, not estimated. | Confirm load schedule / intraday feed. |
 | A4 | No LLM provider is approved yet. Everything runs on a deterministic fake provider behind the gateway. | Pick providers per tier once enterprise approval and data-residency rules are known. |
@@ -34,7 +34,7 @@ flowchart TD
     H1 --> AU[Automation intents]
     H1 --> GN[General]
     LK & DG --> ST[Scoped semantic tool]
-    ST --> SEM[(Semantic layer<br/>BigQuery adapter / mock)]
+    ST --> SEM[(Semantic layer<br/>Cube adapter / mock)]
     LK & DG & GN --> MG[Model gateway<br/>FAST / STANDARD / DEEP]
     MG --> P1[Provider A] & P2[Provider B]
     LK & DG --> VA[Validation<br/>numbers, direction, dates, scope]
@@ -257,11 +257,16 @@ class SemanticLayer:   query(q) -> SemanticResult   # raises DataNotAvailable / 
   record, and an evidence-ledger entry.
 - Derived metrics (AOV = sales / transactions), comparisons, deltas, and percent changes
   are computed in the layer; contribution shares come from `analytics/`.
-- **BigQuery adapter (next).** Compile to parameterized Standard SQL over the fact table,
-  joined to the calendar table for period and LY alignment. Enforce store with a mandatory
-  `WHERE store_id = @store_id` plus BigQuery row-level security or authorized views. Add
-  per-query byte caps, a timeout, and a result cache keyed by normalized query + data
-  version. Metric SQL lives beside `semantic_catalog.yaml`, never in prompts.
+- **Cube adapter framework** (`tools/semantic/cube.py`). Disabled by default in
+  `config/cube.yaml`; enabling requires an HTTPS REST base URL, an authorization value
+  supplied through an environment variable, and store/time/measure member mappings.
+  Requests include the authorized store filter and store-local timezone. Supports aggregate
+  measures and mapped department breakdowns/filters, ordering, and limits. HTTP timeouts,
+  bounded `Continue wait` retries, and result validation return safe semantic-layer errors.
+  Missing settings fail startup; outages do not switch to mock data. Cube-side access
+  policies and credential issuance still need deployment details. Comparisons and date/hour
+  breakdowns are rejected until calendar/member definitions are confirmed. See
+  [connection setup](../README.md#cube-connection-framework). No live integration is verified yet.
 
 ## 8. Automation data model
 
@@ -447,7 +452,7 @@ See [BACKLOG.md](BACKLOG.md).
 
 | Spike requirement | Status in this repo | What makes it "real" |
 |---|---|---|
-| 1. "What were sales yesterday?" | Done: LOOKUP / NONE, templated, validated | BigQuery adapter (B-07) |
+| 1. "What were sales yesterday?" | Done: LOOKUP / NONE, templated, validated | Configure and verify Cube adapter (B-07) |
 | 2. "Compare that with last year." | Done: follow-up inherits metric + date; FAST narration validated | Real FAST model (B-11) |
 | 3. "Which departments drove the difference?" | Done: department deltas + totals | Same |
 | 4. "Why was Bedroom down?" | Done: STANDARD tool loop, 3 tool calls, claims + validation, fallback | Real STANDARD model; tuning with golden set (B-11, B-13, B-25) |

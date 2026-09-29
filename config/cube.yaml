@@ -1,0 +1,9 @@
+# Disabled until the Cube endpoint, member names, and access policy are confirmed.
+enabled: false
+api_url: ""              # HTTPS REST base URL, ending in /cubejs-api/v1 (or your custom path)
+token_env: STORE_AGENT_CUBE_TOKEN  # Environment variable containing the Authorization value
+store_member: ""         # Example: Retail.store_id
+time_member: ""          # Example: Retail.sold_at
+timeout_s: 10
+measures: {}             # Example: {sales: Retail.sales, transactions: Retail.transactions}
+dimensions: {}           # Example: {department: Retail.department}

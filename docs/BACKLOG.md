@@ -14,7 +14,7 @@ Blocking questions refer to `ARCHITECTURE.md` §0 (A1–A7).
 | B-04 | Role source | Entra app roles or groups → `capabilities.yaml` roles; change propagates without deploy | A5 |
 | B-05 | Postgres persistence | Repositories for automations, runs, refs, frames on Postgres with migrations; same tests pass | Hosting decision |
 | B-06 | Trace export | OpenTelemetry spans + trace rows in BigQuery; message text off by default | — |
-| B-07 | BigQuery semantic adapter | `SemanticQuery` → parameterized SQL; store filter + row-level security; byte cap, timeout, cache; golden queries match hand-written SQL | A1 |
+| B-07 | Cube semantic adapter | Configure REST endpoint, credentials, member mappings and Cube access policies; confirm units/freshness; add calendar comparisons and date/hour breakdowns; golden queries match Cube results | A1; opt-in aggregate/department adapter framework implemented, not live-verified |
 | B-08 | Fiscal calendar | LY alignment and "last week" from the calendar table; replaces `calendar.py` rules | A2 |
 
 ## Phase 2: Router
@@ -60,7 +60,7 @@ Blocking questions refer to `ARCHITECTURE.md` §0 (A1–A7).
 | B-25 | Golden answer set | Realistic questions → expected semantic queries + numbers; runner reports numerical, scope, date, comparison accuracy and unsupported-claim rate | B-07 |
 | B-26 | Latency/cost dashboard | Looker over trace tables: route mix, tiers, fallbacks, validation failures, p50/p95, cost | B-06 |
 | B-27 | Security testing | Scope-bypass attempts, prompt injection via tool data, red-team set in CI | — |
-| B-28 | Load test | Target concurrency; BigQuery quota and model rate-limit headroom | B-07, B-11 |
+| B-28 | Load test | Target concurrency; Cube query capacity and model rate-limit headroom | B-07, B-11 |
 
 ## Phase 7: Expansion
 
@@ -74,6 +74,6 @@ Blocking questions refer to `ARCHITECTURE.md` §0 (A1–A7).
 ## Suggested order for the next sprint
 
 1. Close A1/A5/A6 (data table, identity attributes, Teams app approval path).
-2. B-07 BigQuery adapter and B-03 Entra identity. These carry the most risk.
+2. B-07 Cube integration and B-03 Entra identity. These carry the most risk.
 3. B-16 to B-18 Teams host and proactive send, so the spike runs in a test tenant.
 4. B-11 first real provider once A4 is decided, then B-13 and B-25.

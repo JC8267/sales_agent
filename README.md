@@ -30,6 +30,30 @@ and typing a number clicks a suggested action.
 Dev users (`config/dev_users.yaml`): `u-anna` (coworker, store 042), `u-marco` (manager,
 042), `u-rita` (market manager, US-EAST stores 042 and 017), `u-wes` (coworker, 210).
 
+## Cube connection framework
+
+The Cube REST adapter is opt-in; offline runs still use mock data. Configure
+`config/cube.yaml` with your REST base URL (including `/v1`), store/time members,
+measure mappings, and an optional department mapping. The names in comments are examples,
+not assumptions about your deployment. Set the environment variable named by `token_env`
+to the complete Cube `Authorization` header value, then set `enabled: true`.
+Do not put tokens in YAML or commit them. Missing connection settings fail at startup;
+Cube errors never silently fall back to synthetic data.
+
+The adapter supports aggregate measures and department breakdowns/filters, absolute or
+relative date ranges, store-local timezone, ordering, and limits. It always adds the
+runtime-selected store filter. Cube must also enforce the approved service account's
+access policy; this framework does not mint user JWTs or configure Cube-side policies.
+Measure values must already use our catalog units (availability is 0–100 percent).
+
+Comparisons and date/hour breakdowns are explicitly unsupported until Cube's fiscal
+calendar and member definitions are confirmed. Existing data-lag settings remain in
+effect and need confirmation. Requests have a configured timeout; `Continue wait` is
+retried at most twice. No live Cube deployment has been tested yet.
+
+References: [Cube REST API](https://docs.cube.dev/reference/core-data-apis/rest-api/reference),
+[query format](https://docs.cube.dev/reference/core-data-apis/rest-api/query-format).
+
 ## Layout
 
 ```text

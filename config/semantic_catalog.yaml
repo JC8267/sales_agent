@@ -1,7 +1,6 @@
 # Metric/dimension catalog shared by slot extraction, the semantic tool, and validation.
 # This is the single place business vocabulary lives; prompts must not redefine it.
-# If the production "semantic layer" is a BigQuery table, metric SQL definitions
-# belong next to these entries in the BigQuery adapter, not in the LLM.
+# Cube owns production metric formulas; cube.yaml maps this vocabulary to Cube members.
 
 default_metric: sales
 data_lag_days: 1          # latest available date = store-local today - lag
